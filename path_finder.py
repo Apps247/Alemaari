@@ -1,6 +1,7 @@
-from maze import Maze
+# from maze import Maze
+import numpy as np
 
-def possible_paths(maze: Maze):
+def possible_paths(maze):
     if maze.start is None or maze.end is None:
         raise Exception("Start or end point not set")
     
@@ -13,27 +14,90 @@ def possible_paths(maze: Maze):
     return search(maze)
 
 
-def search(maze: Maze):
+def search(maze):
     def reached(pos):
         return pos == maze.end
     
-    # def grope(pos): # * Give neighboring positions Up, Right, Down, Left 
+    def grope(pos, prev_pos): # * Give neighboring positions Up, Right, Down, Left 
+        # TODO: Grope in order relative to end are
+        next_posns = []
+        
 
+        vector_to_end = np.subtract(maze.end, pos)
+        vector_to_end_x = vector_to_end[1]
+        vector_to_end_y = vector_to_end[0]
 
-    def solve_pos(pos: tuple[int, int], path : list[tuple[int, int]], pos_wl: list[tuple[int, int]], path_wl : list[list[tuple[int, int]]], solutions : list[list[tuple[int, int]]]):
-        if reached(pos):
-            return solve_lopos(pos_wl, path_wl, solutions.append(path.append(pos)))
-        elif pos in path:
-            return solve_lopos(pos_wl, path_wl, solutions)
+        direction_to_end = np.sign(vector_to_end)
+        direction_to_end_x = (0, direction_to_end[1])
+        direction_to_end_y = (direction_to_end[0], 0)
+
+        if abs(vector_to_end_y) >= abs(vector_to_end_x):
+            next_posns.extend([
+                tuple(np.add(pos, direction_to_end_y)),
+                tuple(np.add(pos, direction_to_end_x)),
+            ])
         else:
-            next_posns = filter(is_valid, grope(pos))
-            solve_lopos(pos_wl.extend(next_posns),
-                        path_wl.extend([path.append(pos) for i in range(next_posns)]),
-                        solutions)
+            next_posns.extend([
+                tuple(np.add(pos, direction_to_end_x)),
+                tuple(np.add(pos, direction_to_end_y)),
+            ])
+
+        if prev_pos is not None:
+            next_posns.append(tuple((np.add(pos, np.subtract(pos, prev_pos)))))
+        
+        next_posns.extend([pos for pos in [
+            (pos[0] - 1, pos[1]),
+            (pos[0] + 1, pos[1]),
+            (pos[0], pos[1] + 1),
+            (pos[0], pos[1] - 1),
+        ] if pos not in next_posns])
     
-    def solve_lopos(pos_wl: list[tuple[int, int]], path_wl : list[list[tuple[int, int]]], solutions : list[list[tuple[int, int]]]):
+        return next_posns
+    
+    def is_valid(pos: tuple[int, int]):
+        if pos[0] < 0 or pos[1] < 0:
+            return False
+        if pos[0] >= len(maze.layout):
+            return False
+        if pos[1] >= len(maze.layout[0]):
+            return False
+        if not maze.layout[pos[0]][pos[1]]:
+            return False
+        
+        return True
+    from PIL import Image, ImageDraw
+    image = Image.open('stock_maze_2.webp')
+    image_scaled = image.resize((image.size[0]//20, image.size[1]//20))
+    draw = ImageDraw.Draw(image_scaled)
+    def solve_pos(pos: tuple[int, int], path : list[tuple[int, int]] = [], pos_wl: list[tuple[int, int]] = [], path_wl : list[list[tuple[int, int]]] = [], tried : list[tuple[int, int]] =[], solutions : list[list[tuple[int, int]]] = [], depth = 0):
+        if reached(pos):
+            return [*solutions, [*path, pos]] if len([*solutions, [*path, pos]]) > 0 else False
+            # return solve_lopos(pos_wl, path_wl, [*solutions, [*path, pos]], [], depth)
+        elif pos in tried:
+            return solve_lopos(pos_wl, path_wl, solutions, tried, depth)
+        elif pos in path:
+            return solve_lopos(pos_wl, path_wl, solutions, [*tried, pos], depth)
+        else:
+            draw.point((pos[1], pos[0]), fill="pink")
+            if depth > 10000: 
+                print('Depth:', depth)
+            if depth > 10000: 
+                print(pos)
+                print(len(pos_wl))
+                print(pos_wl)
+                image_scaled.save('debug_solve_progress.png')
+                raise Exception("BREAK")
+            next_posns = list(filter(lambda pos: pos not in path, filter(is_valid, grope(pos, (path[-1] if len(path) > 0 else None)))))
+            return solve_lopos([*next_posns, *pos_wl],
+                        [*[[*path, pos] for i in range(len(next_posns))], *path_wl],
+                        [*tried, pos],
+                        solutions, depth)
+    
+    def solve_lopos(pos_wl: list[tuple[int, int]], path_wl : list[list[tuple[int, int]]], visited : list[tuple[int, int]], solutions : list[list[tuple[int, int]]], depth):
         if len(pos_wl) == 0:
             return solutions if len(solutions) > 0 else False
         else:
-            return solve_pos(pos_wl[0], path_wl=[0], )
+            return solve_pos(pos_wl[0], path_wl[0], pos_wl[1:], path_wl[1:], visited, solutions, depth+1)
+        
+    return solve_pos(maze.start)
         

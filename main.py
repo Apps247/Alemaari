@@ -1,19 +1,27 @@
 from maze import Maze
 
-maze1_string = '''
-1 1 1 1 1 1
-0 0 1 0 0 0
-0 1 1 0 1 1
-1 1 0 1 1 0
-0 1 1 1 0 0
-0 1 0 1 0 1
-'''.replace('\n', ' ')
+import sys
+sys.setrecursionlimit(3500000)
 
-maze1_dimensions = (6, 6) # (height, width)
+import gc
 
-maze1 = (Maze.from_string(maze1_string, maze1_dimensions, start=(0,1), end = (3,4)))
-print(maze1)
+# maze1_string = '''
+# 1 0 0 0 0
+# 1 0 1 1 0
+# 1 0 0 1 0
+# 1 1 1 1 1
+# 0 1 0 0 1
+# '''.replace('\n', ' ')
 
+maze1_dimensions = (5, 5) # (height, width)
 
+maze1 = (Maze.from_image('stock_maze_2.webp',start=(3,18), end = (35,21)))
     
-maze1.render('new.png')
+maze1.render('maze.png')
+maze1.render('solution.png', show_possible_paths=True)
+
+# for path in maze1.possible_paths():
+    # print(path)
+#
+
+gc.collect()
