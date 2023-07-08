@@ -9,6 +9,13 @@ class Maze:
         self.end = end
         self.image = image
 
+        # self.periphery = self.get_periphery()
+
+    # def get_periphery(self):
+    #     level = 0
+    #     while True:
+    #         for 
+
     # def shortest_path(self):
 
 
@@ -33,6 +40,7 @@ class Maze:
             if not possible_path_list:
                 draw.point((self.end[1], self.end[0]), fill="red")
             else:
+                print(len(possible_path_list))
                 for path in possible_path_list:
                     for pos in path[1:-1]:
                         draw.point((pos[1], pos[0]), fill="mediumspringgreen")
@@ -57,10 +65,11 @@ class Maze:
             return cls(layout = layout, start = start, end = end)
         
     @classmethod
-    def from_image(cls, file_path: str, start: tuple[int, int] = None, end: tuple[int, int] = None, color_threshold = (150, 150, 150)):
-        scale_factor = 20
+    def from_image(cls, file_path: str, start: tuple[int, int] = None, end: tuple[int, int] = None, color_threshold = (250, 250, 250)):
+        scale_factor = 7
         image =  Image.open(file_path)
         image_resized =  image.resize((image.size[0] // scale_factor, image.size[1] // scale_factor))
+        # image_resized.save("maze_resized.png")
         image_array = list(np.asarray(image_resized))
         def flatten(pixel):
             return int(pixel[0] > color_threshold[0] and pixel[1] > color_threshold[1] and pixel[2] > color_threshold[2])

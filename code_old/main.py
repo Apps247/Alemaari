@@ -15,7 +15,7 @@ import gc
 
 maze1_dimensions = (5, 5) # (height, width)
 
-maze1 = (Maze.from_image('stock_maze_2.webp',start=(3,18), end = (35,21)))
+maze1 = (Maze.from_image('stock_maze_2.webp',start=(10,52), end = (104,61)))
     
 maze1.render('maze.png')
 maze1.render('solution.png', show_possible_paths=True)
