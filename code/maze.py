@@ -6,8 +6,12 @@ from PIL import Image
 import matplotlib.pyplot as plt
 from scipy.ndimage import interpolation as inter
 
+import time
+
+import path_finder
+
 class Maze:
-    def __init__(self, layout : list[list[int]], original_image : Image = None):
+    def __init__(self, layout : np.ndarray[int, int], original_image : Image = None):
         self.layout = layout
         self.original_image = original_image
 
@@ -15,24 +19,31 @@ class Maze:
 
 
     def render(self, file_path = None, show_possible_paths = False) -> None:
-        # TODO
-        pass
+        render = Image.fromarray(self.layout * 255)
+        render.save(file_path)
+
 
         
     @classmethod
     def from_image(cls, file_path: str, start: tuple[int, int] = None, end: tuple[int, int] = None):
-        # image_raw =  np.asarray(Image.open(file_path))
+        start = time.time()
+
         img =  io.imread(file_path)
         image = img_as_float(color.rgb2gray(img))
 
-        print("Size:", len(img) * len(img[0]))
+        n_rows, n_cols = image.shape
+        # print(f"Size: {n_rows} * {n_cols} = {n_rows * n_cols}")
+
+        print(f"Read: {time.time() - start}")
 
         # * Denoise
         blur = cv2.GaussianBlur(image,(5,5),0)
+        print(f"Denoise: {time.time() - start}")
 
         # * Binarize
         image_binary = blur > 0.5
         # ret, imgf = cv2.threshold(blur, 127, 255, cv2.THRESH_BINARY, cv2.THRESH_OTSU)
+        print(f"Binarize: {time.time() - start}")
 
         # TODO: Skew
         # def rotation_score(img, angle):
@@ -45,34 +56,40 @@ class Maze:
 
         # * Thinning
         image_skeletonize = morphology.skeletonize(image_binary, method='lee')
+        print(f"Skeletonize: {time.time() - start}")
         # kernel = np.ones((10,10), np.uint8)
         # erosion = cv2.erode(imgf, kernel, iterations=1)
 
         # * Smoothen
-        image_smooth = image_skeletonize
-        for i in range(len(image_skeletonize) - 1): # ! -1 is a Dirty Fix
-            for j in range(len(image_skeletonize[0]) - 1): # ! -1 is a Dirty Fix
-                if (i % 2 == 0 and j % 2 == 1) or 1: # TODO
-                    if image_skeletonize[i,j] == 0:
-                        if ((i == 0 or i == len(image_skeletonize))\
-                            or (image_skeletonize[i-1, j]==255 or image_skeletonize[i+1,j]==255)) \
-                            and ((j == 0 or j == len(image_skeletonize[0])) \
-                                or (image_skeletonize[i, j-1]==255 or image_skeletonize[i,j+1]==255)):
-                                image_smooth[i,j] = 127 # * Temporary to avoid cycle of 255
-        for i in range(len(image_smooth)):
-            for j in range(len(image_smooth[0])):
-                if image_smooth[i,j] == 127:
-                    image_smooth[i,j] = 255
 
-                        
+        image_smooth = image_skeletonize // 255
+
+        empty_row = image_skeletonize[0] * 0
+        empty_col = image_skeletonize[:, [0]] * 0
+
+        path_is_below = np.vstack((image_skeletonize[1:, :], empty_row))
+        path_is_above = np.vstack((empty_row, image_skeletonize[:-1, :])) 
+
+        path_is_right = np.hstack((image_skeletonize[:, 1:], empty_col))
+        path_is_left = np.hstack((empty_col, image_skeletonize[:, :-1]))
+
+        # print(image_skeletonize.shape, path_is_below.shape, path_is_above.shape, path_is_right.shape, path_is_left.shape)
+        
+        to_fill = (path_is_right + path_is_left) * (path_is_above + path_is_below)
+        
+        image_smooth += to_fill
+
+        image_smooth[image_smooth >= 1] = 255   
+        
+        print(f"Smoothen: {time.time() - start}")    
         
         # * Encoding
         layout = image_smooth // 255
 
+        return cls(layout = layout)
+    
 
-        # return cls()
-
-        render = Image.fromarray(layout)
-        render.save('../output/render.png')
+    def possible_paths(self, start, end):
+        return path_finder.find_paths(self, start, end)
 
 
