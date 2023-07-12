@@ -2,8 +2,7 @@ import cv2
 from  skimage import img_as_float
 from skimage import io, color, morphology
 import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
+from PIL import Image, ImageDraw
 from scipy.ndimage import interpolation as inter
 
 import time
@@ -18,9 +17,11 @@ class Maze:
         # self.periphery = self.get_periphery()
 
 
-    def render(self, file_path = None, show_possible_paths = False) -> None:
+    def render(self, file_path = None) -> None:
         render = Image.fromarray(self.layout * 255)
-        render.save(file_path)
+        if file_path is not None: 
+            render.save(file_path)
+        return render
 
 
         
@@ -29,6 +30,7 @@ class Maze:
         start = time.time()
 
         img =  io.imread(file_path)
+        original_image = Image.fromarray(img)
         image = img_as_float(color.rgb2gray(img))
 
         n_rows, n_cols = image.shape
@@ -41,7 +43,8 @@ class Maze:
         print(f"Denoise: {time.time() - start}")
 
         # * Binarize
-        image_binary = blur > 0.5
+        # if np.average(blur)
+        image_binary = blur > 0.9
         # ret, imgf = cv2.threshold(blur, 127, 255, cv2.THRESH_BINARY, cv2.THRESH_OTSU)
         print(f"Binarize: {time.time() - start}")
 
@@ -77,6 +80,11 @@ class Maze:
         
         to_fill = (path_is_right + path_is_left) * (path_is_above + path_is_below)
         
+        # * Remove redundants
+        to_fill[0::2] = empty_row
+        # to_fill[:, 1::2] = empty_col
+
+
         image_smooth += to_fill
 
         image_smooth[image_smooth >= 1] = 255   
@@ -86,10 +94,32 @@ class Maze:
         # * Encoding
         layout = image_smooth // 255
 
-        return cls(layout = layout)
+        return cls(layout = layout, original_image = original_image)
     
 
     def possible_paths(self, start, end):
         return path_finder.find_paths(self, start, end)
 
+    def render_possible_paths(self, start, end, filepath = None):
+        paths = self.possible_paths(start, end)
+        image = img_as_float(color.rgb2gray(np.array(self.original_image)))
+        layout = self.layout
+        image *= layout
+        render = Image.fromarray(image)
+        print(layout.shape, image.shape)
+        # render.paste(Image.fromarray(self.layout))
+        draw = ImageDraw.Draw(render)
+        draw.point(posn_to_draw_point(start), 'limegreen')
+        if not paths:
+            draw.point(posn_to_draw_point(end), 'red')
+        else:
+            draw.point(posn_to_draw_point(end), 'darkgreen')
+            for pt in paths[0][1:-1]:
+                draw.point(posn_to_draw_point(pt), fill='blue')
+        if filepath is not None:
+            render.save(filepath)
+        return render
 
+
+def posn_to_draw_point(pos: tuple[int, int]):
+    return (pos[1], pos[0])

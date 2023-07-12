@@ -1,12 +1,10 @@
 from maze import Maze
 import time
 
-start = time.time()
+maze = Maze.from_image('../source_images/city.webp')
 
-maze = Maze.from_image('../source_images/stock_maze_2.webp')
+# print(end - start)
 
-end = time.time()
+maze_image = maze.render('../output/render.png')
 
-print(end - start)
-
-maze.render('../output/render.png')
+maze_solutions = (maze.render_possible_paths((3, 2), (8, 3), '../output/solution.png'))
