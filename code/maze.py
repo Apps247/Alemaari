@@ -34,7 +34,7 @@ class Maze:
         image = img_as_float(color.rgb2gray(img))
 
         n_rows, n_cols = image.shape
-        # print(f"Size: {n_rows} * {n_cols} = {n_rows * n_cols}")
+        print(f"Size: {n_rows} * {n_cols} = {n_rows * n_cols}")
 
         print(f"Read: {time.time() - start}")
 
@@ -102,20 +102,39 @@ class Maze:
 
     def render_possible_paths(self, start, end, filepath = None):
         paths = self.possible_paths(start, end)
-        image = img_as_float(color.rgb2gray(np.array(self.original_image)))
-        layout = self.layout
-        image *= layout
-        render = Image.fromarray(image)
-        print(layout.shape, image.shape)
-        # render.paste(Image.fromarray(self.layout))
+        image = np.array(self.original_image)
+        # render = Image.fromarray(image)
+        render = Image.fromarray(self.layout * 255)
+
         draw = ImageDraw.Draw(render)
         draw.point(posn_to_draw_point(start), 'limegreen')
         if not paths:
             draw.point(posn_to_draw_point(end), 'red')
         else:
             draw.point(posn_to_draw_point(end), 'darkgreen')
+            # for path in paths[19:]:
+            #     for pt in path[1:-1]:
+            #         draw.point(posn_to_draw_point(pt), fill='blue')
+                    # draw.point(posn_to_draw_point(np.subtract(pt,1)), fill='blue')
+                #     draw.point(posn_to_draw_point(pt), fill='blue')
+                #     draw.point(posn_to_draw_point(np.add(pt,1)), fill='blue')
+
+            # # # * Path 20
+            # for pt in paths[19][1:-1]:
+            #     draw.point(posn_to_draw_point(np.subtract(pt,1)), fill='red')
+            #     draw.point(posn_to_draw_point(pt), fill='red')
+            #     draw.point(posn_to_draw_point(np.add(pt,1)), fill='red')
+            # * Path 1
             for pt in paths[0][1:-1]:
                 draw.point(posn_to_draw_point(pt), fill='blue')
+                draw.point(posn_to_draw_point(np.subtract(pt,1)), fill='blue')
+                draw.point(posn_to_draw_point(pt), fill='blue')
+                draw.point(posn_to_draw_point(np.add(pt,1)), fill='blue')
+
+            # print(paths[0] == paths[15])
+            # print("Difference:",set(paths[0]) - set(paths[19]))
+            
+
         if filepath is not None:
             render.save(filepath)
         return render
