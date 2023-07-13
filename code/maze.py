@@ -103,37 +103,37 @@ class Maze:
     def render_possible_paths(self, start, end, filepath = None):
         paths = self.possible_paths(start, end)
         image = np.array(self.original_image)
-        # render = Image.fromarray(image)
-        render = Image.fromarray(self.layout * 255)
+        render = Image.fromarray(image)
+        # render = Image.fromarray(self.layout * 255)
+
+        limit = 10
+
+        colors = [
+            'blue',
+            'cornflowerblue',
+            'darkturquoise',
+            'indigo',
+            'darkmagenta',
+            'teal',
+            'steelblue',
+            'midnightblue',
+        ]
 
         draw = ImageDraw.Draw(render)
-        draw.point(posn_to_draw_point(start), 'limegreen')
         if not paths:
-            draw.point(posn_to_draw_point(end), 'red')
+            draw_ring(draw, end, 'red')
         else:
-            draw.point(posn_to_draw_point(end), 'darkgreen')
-            # for path in paths[19:]:
-            #     for pt in path[1:-1]:
-            #         draw.point(posn_to_draw_point(pt), fill='blue')
-                    # draw.point(posn_to_draw_point(np.subtract(pt,1)), fill='blue')
-                #     draw.point(posn_to_draw_point(pt), fill='blue')
-                #     draw.point(posn_to_draw_point(np.add(pt,1)), fill='blue')
+            for i in range(min(limit, len(paths), 1)):
+                path = paths[i]
+                try:
+                    c = colors[i]
+                except IndexError:
+                    c = 'maroon'
+                for pt in path[1:-1]:
+                    draw_ring(draw, pt, c)
 
-            # # # * Path 20
-            # for pt in paths[19][1:-1]:
-            #     draw.point(posn_to_draw_point(np.subtract(pt,1)), fill='red')
-            #     draw.point(posn_to_draw_point(pt), fill='red')
-            #     draw.point(posn_to_draw_point(np.add(pt,1)), fill='red')
-            # * Path 1
-            for pt in paths[0][1:-1]:
-                draw.point(posn_to_draw_point(pt), fill='blue')
-                draw.point(posn_to_draw_point(np.subtract(pt,1)), fill='blue')
-                draw.point(posn_to_draw_point(pt), fill='blue')
-                draw.point(posn_to_draw_point(np.add(pt,1)), fill='blue')
-
-            # print(paths[0] == paths[15])
-            # print("Difference:",set(paths[0]) - set(paths[19]))
-            
+            draw_ring(draw, end, 'darkgreen')
+        draw_ring(draw, start, 'limegreen')
 
         if filepath is not None:
             render.save(filepath)
@@ -142,3 +142,10 @@ class Maze:
 
 def posn_to_draw_point(pos: tuple[int, int]):
     return (pos[1], pos[0])
+
+def draw_ring(draw, pt, color):
+    draw.point(posn_to_draw_point(np.subtract(pt,(1, -1))), fill=color)
+    draw.point(posn_to_draw_point(np.subtract(pt,1)), fill=color)
+    draw.point(posn_to_draw_point(pt), fill=color)
+    draw.point(posn_to_draw_point(np.add(pt,1)), fill=color)
+    draw.point(posn_to_draw_point(np.add(pt,(1, -1))), fill=color)

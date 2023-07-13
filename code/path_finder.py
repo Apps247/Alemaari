@@ -48,18 +48,18 @@ def find_paths(maze, start: tuple[int, int], end: tuple[int, int]):
             ])
 
 
-        general_next_posns =  [
+        general_next_posns =  [ # * Only present for edge cases
             (pos[0] - 1, pos[1]),
             (pos[0] + 1, pos[1]),
             (pos[0], pos[1] + 1),
             (pos[0], pos[1] - 1),
         ]
 
-        result = list(targeted_next_posns)
+        result = []
 
-        for pos in general_next_posns:
-            if pos not in targeted_next_posns:
-                result.append(pos)
+        for p in [*targeted_next_posns, *general_next_posns]:
+            if p not in result and p != pos:
+                result.append(p)
 
         return result
     
@@ -75,47 +75,54 @@ def find_paths(maze, start: tuple[int, int], end: tuple[int, int]):
         
         return True
     
-    limit = 1 # * Stop searching after these many paths have been found
+    limit = 10 # * Stop searching after these many paths have been found
+    depth_switch_limit = 10000 # * Switch to next unexplored junction, give up on this one, at this recursion depth
 
     from PIL import Image, ImageDraw
-    image = Image.open('../source_images/stock_maze_2.webp')
+    image = Image.fromarray(np.array(maze.original_image)) # * Double function to copy image value
     draw = ImageDraw.Draw(image)
 
-    def solve_pos(pos: tuple[int, int], path : list[tuple[int, int]] = [], pos_wl: list[tuple[int, int]] = [], path_wl : list[list[tuple[int, int]]] = [], solutions : list[list[tuple[int, int]]] = [], depth = 0):
+    def solve_pos(pos: tuple[int, int], path : list[tuple[int, int]], pos_wl: list[tuple[int, int]], path_wl : list[list[tuple[int, int]]], solutions : list[list[tuple[int, int]]] = [], current_depth = 0, main_depth = 0):
         if reached(pos):
-            print(path[-2:], pos, '|', pos_wl[:3])
+            # print(path[-2:], pos, '|', pos_wl[:3])
             if len([*solutions, [*path, pos]]) >= limit:
                 print(f"{limit} solutions found")
                 return [*solutions, [*path, pos]]
             else:
-                return solve_lopos(pos_wl[:], path_wl[:], [*solutions, [*path, pos]], depth) # ? [1:] stops previous issue of all solutions being same 
-
+                return solve_lopos(pos_wl[:], path_wl[:], [*solutions, [*path, pos]], 0, main_depth) # ? [1:] stops previous issue of all solutions being same 
+        # elif pos in path:
+        #     return solve_lopos(pos_wl, path_wl, solutions, depth)
+        elif current_depth >= depth_switch_limit:
+            return solve_lopos(pos_wl[:], path_wl[:], solutions, 0, main_depth)
         else:
-            draw.point((pos[1], pos[0]), fill="blue")
-            next_posns = list(filter((lambda pos: True or pos not in path), list(filter(is_valid, grope(pos, (path[-1] if len(path) > 0 else None))))))
-
-            if depth >= 3 : 
-                print(path)
+            draw.point((pos[1], pos[0]), fill="blue") # * For debugging
+            next_posns = list(filter(lambda p: p not in path, filter(is_valid, grope(pos, (path[-1] if len(path) > 0 else None)))))
+            # if depth >= 3400:
+            #     print("path:", path[-5:])
+            #     print("next:", next_posns)
+            if main_depth >= 20000 : # * Terminate depth limit
+                print("Depth Exceeded")
+                # print(path)
                 print(pos)
                 print([*next_posns])
                 for pos in [*next_posns, *pos_wl]:
                     if pos not in path:
                         draw.point((pos[1], pos[0]), fill="pink")
                 image.save('../output/debug_solve_progress.png')
-                print(len(solutions))
+                print(len(solutions), "solutions found")
                 # raise Exception("BREAK")
                 return solutions[:] if len(solutions) > 0 else False
             
             return solve_lopos([*next_posns, *pos_wl],
                         [*[[*path, pos] for i in range(len(next_posns))], *path_wl],
-                        solutions[:], depth)
+                        solutions[:], current_depth, main_depth)
     
-    def solve_lopos(pos_wl: list[tuple[int, int]], path_wl : list[list[tuple[int, int]]], solutions : list[list[tuple[int, int]]], depth):
+    def solve_lopos(pos_wl: list[tuple[int, int]], path_wl : list[list[tuple[int, int]]], solutions : list[list[tuple[int, int]]], current_depth, main_depth):
         if len(pos_wl) == 0:
             print("Len: ", len(solutions))
             return solutions[:] if len(solutions) > 0 else False
         else:
             # print(pos_wl)
-            return solve_pos(pos_wl[0], path_wl[0], pos_wl[1:], path_wl[1:], solutions[:], depth+1)
+            return solve_pos(pos_wl[0], path_wl[0], pos_wl[1:], path_wl[1:], solutions[:], current_depth+1, main_depth+1)
         
-    return solve_pos(start)
+    return solve_pos(start, [], [], [])
