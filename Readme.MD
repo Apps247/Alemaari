@@ -26,10 +26,10 @@ LMRE is a Python application that uses artificial intelligence to find the short
 
 Here are some examples of input images and output images:
 
-Maze path from top to bottom
+Maze path from left to right
 ![Maze input](source_images/stock_maze.jpg)
 ![Maze output](Maze.jpeg)
 
 Street map path from top-left to bottom-right
 ![Street map input](source_images/city.webp)
-![Street map output](Street Map.jpeg)
+![Street map output]("Street Map.jpeg")
