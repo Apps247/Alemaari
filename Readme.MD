@@ -30,11 +30,13 @@ This repository contains the code and data for the LMRE-AI-Pathfinder project, w
 
 Here are some examples of input images and output images:
 
-![Maze input](source_images/maze.png)
-![Maze output](output/maze_solution.png)
+Path from top-left to bottom-right
+![Maze input](source_images/stock_maze.jpg)
+![Maze output](Maze.jpg)
 
-![Street map input](source_images/streetmap.png)
-![Street map output](output/streetmap_solution.png)
+Path from top to bottom
+![Street map input](source_images/city.jpg)
+![Street map output](Street Map.png)
 
 ## License
 
