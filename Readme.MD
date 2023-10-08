@@ -32,4 +32,4 @@ Maze path from left to right
 
 Street map path from top-left to bottom-right
 ![Street map input](source_images/city.webp)
-![Street map output]("Street Map.jpeg")
+![Street map output](Street&#32Map.jpeg)
