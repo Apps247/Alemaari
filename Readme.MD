@@ -1,21 +1,17 @@
-This is the Readme.MD file for the LMRE-AI-Pathfinder repository:
-
 # LMRE-AI-Pathfinder
 
-This repository contains the code and data for the LMRE-AI-Pathfinder project, which is a Python application that uses artificial intelligence to find the shortest path between two points in a given image. The image can be a maze, a street map, or any other type of graph.
+LMRE is a Python application that uses artificial intelligence to find the shortest path between two points in a given image. The image can be a maze, a street map, or any other type of network of 'paths'.
 
 ## Features
 
-- The application can load an image from the source_images folder or from a URL.
-- The application can detect the nodes and edges in the image using OpenCV and networkx libraries.
-- The application can find the shortest path between two user-specified points using A* algorithm.
-- The application can render the solution path on the image and save it to the output folder.
+- The application can detect the nodes and edges in the image using OpenCV.
+- The application can find an optimized path between two user-specified points using a custom depth-first algorithm that optimizes for both path length and time taken to find the path.
+- The application can render the solution path onto the source image.
 
 ## Requirements
 
 - Python 3.8 or higher
 - OpenCV 4.5.3 or higher
-- networkx 2.6.2 or higher
 - numpy 1.21.2 or higher
 - matplotlib 3.4.3 or higher
 
@@ -30,18 +26,10 @@ This repository contains the code and data for the LMRE-AI-Pathfinder project, w
 
 Here are some examples of input images and output images:
 
-Path from top-left to bottom-right
+Maze path from top to bottom
 ![Maze input](source_images/stock_maze.jpg)
-![Maze output](Maze.jpg)
+![Maze output](Maze.jpeg)
 
-Path from top to bottom
-![Street map input](source_images/city.jpg)
-![Street map output](Street Map.png)
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact
-
-If you have any questions or suggestions, please feel free to contact me at apps247@gmail.com.
+Street map path from top-left to bottom-right
+![Street map input](source_images/city.webp)
+![Street map output](Street Map.jpeg)
