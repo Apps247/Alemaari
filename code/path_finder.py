@@ -100,7 +100,7 @@ def find_paths(maze, start: tuple[int, int], end: tuple[int, int]):
             # if depth >= 3400:
             #     print("path:", path[-5:])
             #     print("next:", next_posns)
-            if main_depth >= 20000 : # * Terminate depth limit
+            if main_depth >= 100000 : # * Terminate depth limit
                 print("Depth Exceeded")
                 # print(path)
                 print(pos)

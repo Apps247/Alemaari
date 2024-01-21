@@ -144,8 +144,8 @@ def posn_to_draw_point(pos: tuple[int, int]):
     return (pos[1], pos[0])
 
 def draw_ring(draw, pt, color):
-    draw.point(posn_to_draw_point(np.subtract(pt,(1, -1))), fill=color)
-    draw.point(posn_to_draw_point(np.subtract(pt,1)), fill=color)
+    # draw.point(posn_to_draw_point(np.subtract(pt,(1, -1))), fill=color)
+    # draw.point(posn_to_draw_point(np.subtract(pt,1)), fill=color)
     draw.point(posn_to_draw_point(pt), fill=color)
     draw.point(posn_to_draw_point(np.add(pt,1)), fill=color)
-    draw.point(posn_to_draw_point(np.add(pt,(1, -1))), fill=color)
+    # draw.point(posn_to_draw_point(np.add(pt,(1, -1))), fill=color)
